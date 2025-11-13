@@ -10,7 +10,7 @@ __version__ = importlib.metadata.version("sillytask")
 @click.version_option(__version__)
 @click.option("--add", "-a", "task", help="Text describing a task")
 @click.option("--cross", "-x", "done", help="Task to cross off")
-def main(*, task: str, done: str) -> None:
+def main(task: str | None = None, done: str | None = None) -> None:
     if task:
         print(f"Task: {task}")
     if done:

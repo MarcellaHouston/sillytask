@@ -1,5 +1,5 @@
 [project]
-name = "todo-cli"
+name = "sillytask"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
@@ -10,6 +10,10 @@ dependencies = [
 
 [project.scripts]
 sillytask = "sillytask.__main__:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [tool.pylint.typecheck]
 signature-mutators = ["command", "option", "argument"]
