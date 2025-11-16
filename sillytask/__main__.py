@@ -7,6 +7,7 @@ import time
 import click
 from .config import Config
 from .task import Task
+from .utils import write_task, delete_task, get_task_list
 
 __version__ = importlib.metadata.version("sillytask")
 
@@ -21,20 +22,15 @@ __version__ = importlib.metadata.version("sillytask")
 def main(
     list_tasks: bool, task: str | None = None, done: str | None = None
 ) -> None:
-    Config.PROG_DIR.mkdir(parents=True, exist_ok=True)
+    (Config.PROG_DIR / "tasks/").mkdir(parents=True, exist_ok=True)
 
     if task:
-        new_task = {"task": task, "add_time": int(time.time())}
-        with (Config.PROG_DIR / f"{task}.json").open(
-            "w", encoding="UTF-8"
-        ) as file:
-            json.dump(new_task, file)
+        write_task(Task(task))
     if done:
-        (Config.PROG_DIR / f"{done}.json").unlink()
+        delete_task(done)
     if list_tasks:
-        for file in Config.PROG_DIR.iterdir():
-            if file.suffix == ".json":
-                print(file.read_text())
+        for item in get_task_list():
+            print(item)
 
 
 if __name__ == "__main__":
