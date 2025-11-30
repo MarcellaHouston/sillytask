@@ -1,13 +1,10 @@
 """CLI tool for managing tasks."""
 
-from pathlib import Path
 import importlib.metadata
-import json
-import time
 import click
 from .config import Config
 from .task import Task
-from .utils import write_task, delete_task, get_task_list
+from .utils import write_task, delete_task, get_task_list, Db
 
 __version__ = importlib.metadata.version("sillytask")
 
@@ -22,15 +19,15 @@ __version__ = importlib.metadata.version("sillytask")
 def main(
     list_tasks: bool, task: str | None = None, done: str | None = None
 ) -> None:
-    (Config.PROG_DIR / "tasks/").mkdir(parents=True, exist_ok=True)
-
+    (Config.DOTFOLDER / "tasks/").mkdir(parents=True, exist_ok=True)
+    Db.initialize()
     if task:
-        write_task(Task(task))
+        Db.add_task(task)
     if done:
-        delete_task(done)
+        print("cross")
+        Db.cross_task(done)
     if list_tasks:
-        for item in get_task_list():
-            print(item)
+        Db.print_tasks()
 
 
 if __name__ == "__main__":

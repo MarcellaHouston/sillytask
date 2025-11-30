@@ -1,0 +1,72 @@
+"""Database access."""
+
+import sqlite3
+from datetime import datetime
+from sillytask.config import Config
+
+
+class Db:
+    """Functions related to the database."""
+
+    @staticmethod
+    def initialize() -> None:
+        """Initialize db tables."""
+        con = Db._get_db_()
+        con.execute(
+            """
+            CREATE TABLE IF NOT EXISTS tasks(
+                taskid INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                desc TEXT
+                created DATETIME DEFAULT CURRENT_TIMESTAMP,
+                due DATETIME
+            )
+            """
+        )
+
+    @staticmethod
+    def drop() -> None:
+        """Delete the db file."""
+        Config.DATABASE_PATH.unlink()
+
+    @staticmethod
+    def add_task(
+        name: str, desc: str | None = None, due: datetime | None = None
+    ) -> None:
+        """Add task to db."""
+        con = Db._get_db_()
+        con.execute(
+            """
+            INSERT INTO tasks (name, desc, due)
+            VALUES (?, ?, ?)
+            """,
+            (name, desc, due),
+        )
+
+    @staticmethod
+    def cross_task(name: str):
+        """Cross off a task."""
+        con = Db._get_db_()
+        con.execute(
+            """
+            DELETE FROM tasks
+            WHERE name = ?
+            """,
+            (name,),
+        )
+
+    @staticmethod
+    def print_tasks():
+        """Print all tasks."""
+        con = Db._get_db_()
+        cur = con.execute(
+            """
+            SELECT * FROM tasks
+            """
+        )
+        print(cur.fetchall())
+
+    @staticmethod
+    def _get_db_() -> sqlite3.Connection:
+        """Return connection to db."""
+        return sqlite3.connect(Config.DATABASE_PATH, autocommit=True)

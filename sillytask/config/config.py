@@ -6,4 +6,6 @@ from pathlib import Path
 class Config:
     """Config variables."""
 
-    PROG_DIR = Path.home() / ".sillytask/"
+    DOTFOLDER = Path.home() / ".sillytask"
+
+    DATABASE_PATH = DOTFOLDER / "sillytask.sqlite3"
