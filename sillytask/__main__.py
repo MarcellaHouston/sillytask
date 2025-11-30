@@ -1,35 +1,46 @@
 """CLI tool for managing tasks."""
 
 import importlib.metadata
+from datetime import datetime
 import click
 from .config import Config
-from .task import Task
-from .utils import write_task, delete_task, get_task_list, Db
+from .utils import Db
 
 __version__ = importlib.metadata.version("sillytask")
 
 
-@click.command()
+@click.group()
 @click.version_option(__version__)
-@click.option("--add", "-a", "task", help="Text describing a task")
-@click.option("--cross", "-x", "done", help="Task to cross off")
-@click.option(
-    "--list", "-l", "list_tasks", help="List all tasks", is_flag=True
-)
-def main(
-    list_tasks: bool, task: str | None = None, done: str | None = None
-) -> None:
+def sillytask():
+    """Manage todo list items on the command line."""
     (Config.DOTFOLDER / "tasks/").mkdir(parents=True, exist_ok=True)
     Db.initialize()
-    if task:
-        Db.add_task(task)
-    if done:
-        print("cross")
-        Db.cross_task(done)
-    if list_tasks:
-        Db.print_tasks()
+
+
+@sillytask.command()
+@click.argument("task")
+@click.option("--note", "-n", help="Note details of task.")
+@click.option("--due", "-d", help="Due date of task.")  # TODO: Specify format
+def add(task: str, note: str | None = None, due: str | None = None):
+    """Add task to db."""
+    # TODO: Add an input parsing util
+    due_datetime = datetime(2026, 1, 12) if due else None
+    Db.add_task(task, note, due_datetime)
+
+
+@sillytask.command()
+@click.argument("task")
+def cross(task: str):
+    """Cross off a done task."""
+    Db.cross_task(task)
+
+
+@sillytask.command(name="list")
+def list_tasks():
+    """List tasks."""
+    Db.print_tasks()
 
 
 if __name__ == "__main__":
     # pylint: disable=no-value-for-parameter
-    main()
+    sillytask()
