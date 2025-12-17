@@ -65,7 +65,16 @@ class Db:
             SELECT taskid, name, desc, created, due FROM tasks
             """
         )
-        return cur.fetchall()
+        return [
+            {
+                "taskid": t[0],
+                "name": t[1],
+                "desc": t[2],
+                "created": t[3],
+                "due": t[4],
+            }
+            for t in cur.fetchall()
+        ]
 
     @staticmethod
     def _get_db_() -> sqlite3.Connection:

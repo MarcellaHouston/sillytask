@@ -70,6 +70,9 @@ def list_tasks(format: str = "plain", name_only: bool = False):
     if format == "json":
         print(tasks)
     elif format == "plain":
+        for attr in tasks[0].keys():
+            print(attr, end=" ")
+        print()
         for task in tasks:
             for attr in task.values():
                 print(attr, end=" ")
