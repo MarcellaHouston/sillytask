@@ -1,5 +1,6 @@
 """Database access."""
 
+from typing import Any
 import sqlite3
 from datetime import datetime
 from sillytask.config import Config
@@ -17,7 +18,7 @@ class Db:
             CREATE TABLE IF NOT EXISTS tasks(
                 taskid INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL,
-                desc TEXT
+                desc TEXT,
                 created DATETIME DEFAULT CURRENT_TIMESTAMP,
                 due DATETIME
             )
@@ -56,15 +57,15 @@ class Db:
         )
 
     @staticmethod
-    def print_tasks():
-        """Print all tasks."""
+    def get_tasks() -> list[dict[str, Any]]:
+        """Return all tasks."""
         con = Db._get_db_()
         cur = con.execute(
             """
-            SELECT * FROM tasks
+            SELECT taskid, name, desc, created, due FROM tasks
             """
         )
-        print(cur.fetchall())
+        return cur.fetchall()
 
     @staticmethod
     def _get_db_() -> sqlite3.Connection:
