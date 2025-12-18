@@ -63,6 +63,7 @@ class Db:
         cur = con.execute(
             """
             SELECT taskid, name, desc, created, due FROM tasks
+            ORDER BY due ASC, created ASC, taskid
             """
         )
         return [

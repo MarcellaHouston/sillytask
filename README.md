@@ -2,8 +2,6 @@
 
 ## Core Capabilities:
 
--   Print tasks based on due date (soonest)
--   Human readable printing
 -   Colorizing tasks based on category (like classes or <work, personal>)
     -   Want to do list
     -   Printing only tasks of a certain category
@@ -23,7 +21,7 @@
 -   Reading from a config file
 -   Task completion percentage (derived from subtasks?)
 -   Keeping track of crossed tasks
--   Wildcards for crossing tasks
+-   Wildcards for crossing tasks (and listing categories)
 -   Input from stdin
 -   Output flags in various formats (json, yaml, human readable, others?)
 -   Due dates "soon" and "eventually"

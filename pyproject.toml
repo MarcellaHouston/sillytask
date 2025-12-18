@@ -6,10 +6,11 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "click>=8.3.0",
+    "prettytable>=3.17.0",
 ]
 
 [project.scripts]
-sillytask = "sillytask.__main__:main"
+sillytask = "sillytask.__main__:sillytask"
 
 [build-system]
 requires = ["hatchling"]
