@@ -4,9 +4,10 @@ from random import randint
 import importlib.metadata
 from datetime import datetime
 import click
-from prettytable import PrettyTable
+import arrow as arw
+from prettytable import TableStyle, PrettyTable
 from .config import Config
-from .utils import Db
+from .utils import Db, code_of, color_hash, RESET_CODE
 
 __version__ = importlib.metadata.version("sillytask")
 
@@ -37,18 +38,24 @@ def sillytask():
 @click.argument("task", required=False)
 @click.option("--note", "-n", help="Note details of task.")
 @click.option("--due", "-d", help="Due date of task.")  # TODO: Specify format
-def add(task: str | None, note: str | None = None, due: str | None = None):
+@click.option("--category", "-c", help="Category of tasks.")
+def add(
+    task: str | None,
+    note: str | None = None,
+    due: str | None = None,
+    category: str | None = None,
+):
     """Add task to db."""
     tasks = check_for_stdin(task)
 
     # TODO: Add an input parsing util
     due_datetime = (
-        datetime(randint(2025, 2030), randint(1, 12), randint(1, 27))
+        datetime(randint(2025, 2025), randint(12, 12), randint(18, 31))
         if due
         else None
     )
     for t in tasks:
-        Db.add_task(t, note, due_datetime)
+        Db.add_task(t, note, due_datetime, category)
 
 
 @sillytask.command()
@@ -63,26 +70,91 @@ def cross(task: str):
     "--format",
     "-f",
     "print_format",
-    type=click.Choice(["plain", "json"]),
-    default="plain",
+    type=click.Choice(["text", "json", "html", "latex", "csv", "mediawiki"]),
+    default="text",
     help="Format of output.",
 )
-@click.option("--name-only", "-n", default=False, help="Only print names.")
-def list_tasks(print_format: str, name_only: bool):
+@click.option(
+    "--col",
+    "yes_cols",
+    multiple=True,
+    type=click.Choice(Db.COL_NAMES),
+    help="Columns to include (can be repeated).",
+)
+@click.option(
+    "--no-col",
+    "no_cols",
+    multiple=True,
+    type=click.Choice(Db.COL_NAMES),
+    help="Columns to exclude (can be repeated).",
+)
+@click.option("--all", "show_all", is_flag=True, help="Include all columns.")
+@click.option(
+    "--category",
+    "-c",
+    "categories",
+    multiple=True,
+    help="Categories to include (can be repeated).",
+)
+@click.option(
+    "--no-format",
+    "no_format",
+    is_flag=True,
+    default=False,
+    help="Print without text formatting.",
+)
+def list_tasks(
+    print_format: str,
+    yes_cols: tuple[str],
+    no_cols: tuple[str],
+    categories: tuple[str],
+    show_all: bool,
+    no_format: bool,
+):
     """List tasks."""
-    print(f"format={print_format} name_only={name_only}")
-    tasks = (
-        [{"name": x["name"]} for x in Db.get_tasks()]
-        if name_only
-        else Db.get_tasks()
+    cols_set = set(yes_cols + Config.DEFAULT_LIST_COLS) - set(no_cols)
+    cols = tuple(
+        x
+        for x in Config.LIST_ORDER
+        if show_all or x in cols_set or x == "category"
     )
-    if print_format == "json":
-        print(tasks)
-    elif print_format == "plain":
-        table = PrettyTable()
-        table.field_names = [attr for attr in tasks[0].keys()]
-        table.add_rows([[attr for attr in t.values()] for t in tasks])
-        print(table)
+    tasks = Db.get_tasks(cols, categories)
+    category_col = cols.index("category")
+    colors = [
+        color_hash(tasks[i][category_col]) for i in range(len(tasks))
+    ]  # TODO: Calculate color based on category
+
+    rows = []
+    for j, t in enumerate(tasks):
+        row = []
+        for i, attr in enumerate(t):
+            ansi = code_of(
+                colors[j],
+                dim=cols[i] == "created",
+            )
+            if attr is None:
+                attr = ""
+            elif cols[i] in ["due", "created"]:
+                attr = arw.get(attr).humanize()
+            row.append(
+                (str(attr) if attr is not None else "")
+                if no_format
+                else (
+                    ansi + (str(attr) if attr is not None else "") + RESET_CODE
+                )
+            )
+        rows.append(row)
+
+    table = PrettyTable()
+    table.set_style(TableStyle.SINGLE_BORDER)
+    table.field_names = [col.capitalize() for col in cols]
+    table.add_rows(rows)
+    table.align["Desc"] = "l"
+    table.align["Name"] = "l"
+    table.align["Taskid"] = "r"
+    if not ("category" in cols_set or show_all):
+        table.del_column("Category")
+    print(table.get_formatted_string(out_format=print_format))
 
 
 @sillytask.command()

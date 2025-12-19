@@ -2,15 +2,12 @@
 
 ## Core Capabilities:
 
--   Colorizing tasks based on category (like classes or <work, personal>)
-    -   Want to do list
-    -   Printing only tasks of a certain category
 -   Subtasks
 -   Recurring tasks
 -   Ivy Lee method (6 daily tasks)
 -   Undoing of cross operations (log file)
 -   Edit tasks
--   Remove tasks
+-   Remove tasks & crossed tasks stay visible but crossed out
 
 ## Extras that'd be nice
 
